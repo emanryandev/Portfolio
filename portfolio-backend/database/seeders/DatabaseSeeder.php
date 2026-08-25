@@ -25,9 +25,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 2. Team Members
-        $filipater = TeamMember::create([
-            'name' => 'Filipater Nabil',
-            'slug' => 'filipater-nabil',
+        $felopater = TeamMember::create([
+            'name' => 'Felopater Nabil',
+            'slug' => 'felopater-nabil',
             'role' => 'Full-Stack Developer',
             'bio' => 'Senior Full-Stack Developer with deep expertise in Laravel, APIs, Database Architecture, and modern frontend ecosystems.',
             'order' => 1,
@@ -41,9 +41,9 @@ class DatabaseSeeder extends Seeder
             'order' => 2,
         ]);
 
-        $pansy = TeamMember::create([
-            'name' => 'Pansy Dee',
-            'slug' => 'pansy-dee',
+        $banseh = TeamMember::create([
+            'name' => 'Banseh Salah',
+            'slug' => 'banseh-salah',
             'role' => 'QA Engineer',
             'bio' => 'Software Quality Assurance Engineer specialized in Manual Testing, Test Cases, and Regression Testing.',
             'order' => 3,
@@ -57,9 +57,9 @@ class DatabaseSeeder extends Seeder
         }
 
         // Attach skills
-        $filipater->skills()->attach(Skill::whereIn('name', ['Laravel', 'PHP', 'React', 'MySQL', 'JavaScript', 'TailwindCSS'])->pluck('id'));
+        $felopater->skills()->attach(Skill::whereIn('name', ['Laravel', 'PHP', 'React', 'MySQL', 'JavaScript', 'TailwindCSS'])->pluck('id'));
         $eman->skills()->attach(Skill::whereIn('name', ['Docker', 'AWS', 'MySQL'])->pluck('id'));
-        $pansy->skills()->attach(Skill::whereIn('name', ['JavaScript'])->pluck('id'));
+        $banseh->skills()->attach(Skill::whereIn('name', ['JavaScript'])->pluck('id'));
 
         // 4. Categories
         $catWeb = Category::create(['name' => 'Web Application', 'slug' => 'web-application']);
@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
         // Project Contributions
         $project1->teamContributions()->createMany([
             [
-                'team_member_id' => $filipater->id,
+                'team_member_id' => $felopater->id,
                 'role' => 'Full-Stack Developer',
                 'contribution_description' => 'Designed the core architecture, REST APIs, and integrated the complex React frontend.',
             ],
@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
                 'contribution_description' => 'Setup the AWS infrastructure, Dockerized the application, and built the CI/CD pipeline.',
             ],
             [
-                'team_member_id' => $pansy->id,
+                'team_member_id' => $banseh->id,
                 'role' => 'QA Engineer',
                 'contribution_description' => 'Executed rigorous end-to-end testing, catching critical state bugs before production.',
             ],

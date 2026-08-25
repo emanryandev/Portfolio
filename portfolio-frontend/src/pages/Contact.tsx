@@ -54,7 +54,7 @@ export default function Contact() {
     if (step === 'need' && formData.serviceId) {
       const selectedService = services.find(s => s.id === formData.serviceId);
       if (selectedService && formData.recipientId === 'team') {
-        // Simple heuristic: if service name contains 'Full-Stack', suggest Filipater (or role match)
+        // Simple heuristic: if service name contains 'Full-Stack', suggest Felopater (or role match)
         // Since we don't hardcode IDs, we just match by role or name keywords
         const keywordMatch = team.find(m => 
           m.role.toLowerCase().includes(selectedService.name.toLowerCase().split(' ')[0]) ||
