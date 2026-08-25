@@ -15,7 +15,7 @@ export function TeamOverview() {
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background/80 pointer-events-none" />
       <div className="container px-4 md:px-6 max-w-screen-xl mx-auto relative z-10">
         <div className="flex flex-col items-center text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Meet The Team</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Meet Synapse</h2>
           <p className="max-w-[700px] text-muted-foreground text-lg">
             A specialized trio of developers combining deep expertise across the entire stack to build products that perform.
           </p>

@@ -22,7 +22,7 @@ export default function Home() {
             {
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "The Team",
+              "name": "Synapse",
               "url": "https://yourdomain.com/",
               "logo": "https://yourdomain.com/logo.png",
               "contactPoint": {

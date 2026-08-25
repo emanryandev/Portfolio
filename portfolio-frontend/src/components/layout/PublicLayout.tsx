@@ -29,7 +29,7 @@ export function PublicLayout() {
           {/* Logo */}
           <div className="flex items-center gap-6 md:gap-10">
             <Link to="/" className="flex items-center space-x-2 z-10">
-              <span className="font-bold inline-block text-xl tracking-tight">The Team</span>
+              <span className="font-bold inline-block text-xl tracking-tight">Synapse</span>
             </Link>
           </div>
           
@@ -104,7 +104,7 @@ export function PublicLayout() {
       <footer className="border-t border-border/20 py-8 relative z-10 bg-background/50">
         <div className="container px-4 max-w-screen-2xl flex flex-col items-center justify-between gap-4 md:flex-row">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by The Team. All rights reserved.
+            Built by Synapse. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
