@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             'slug' => 'felopater-nabil',
             'role' => 'Backend & Full-Stack Developer',
             'bio' => 'Backend Laravel Developer with strong practical experience building robust backend architectures and full-stack systems. Specialized in PHP, Laravel, MySQL, and modern frontend tools like React and Tailwind CSS.',
+            'image_url' => '/images/team/felopater.jpg',
             'order' => 1,
         ]);
 
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'slug' => 'eman-alaa',
             'role' => 'Cloud & DevSecOps Engineer',
             'bio' => 'Cloud & DevSecOps Engineer with robust hands-on expertise in AWS infrastructure, Linux system administration, and containerization. Architecting auto-healing cloud environments and CI/CD workflows.',
+            'image_url' => '/images/team/eman.jpg',
             'order' => 2,
         ]);
 
@@ -46,6 +48,7 @@ class DatabaseSeeder extends Seeder
             'slug' => 'banseh-salah',
             'role' => 'Junior Penetration Tester',
             'bio' => 'Cybersecurity specialist with hands-on experience in Web Application and API Penetration Testing. Strong understanding of OWASP Top 10, Authentication, API Security, and secure software development practices.',
+            'image_url' => '/images/team/banseh.jpg',
             'order' => 3,
         ]);
 
