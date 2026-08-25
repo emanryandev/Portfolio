@@ -15,13 +15,15 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_KEY }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
           script: |
             cd ~/Portfolio
             git pull origin main
             cd portfolio-backend
-            sudo docker rm -f portfolio_api
+            sudo docker rm -f portfolio_api || true
             sudo docker build -t portfolio-backend .
             sudo docker run -d -p 80:8000 --name portfolio_api portfolio-backend
+            sleep 5
+            sudo docker exec portfolio_api php artisan migrate --force
