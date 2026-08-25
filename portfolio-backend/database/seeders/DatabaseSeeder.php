@@ -28,38 +28,38 @@ class DatabaseSeeder extends Seeder
         $felopater = TeamMember::create([
             'name' => 'Felopater Nabil',
             'slug' => 'felopater-nabil',
-            'role' => 'Full-Stack Developer',
-            'bio' => 'Senior Full-Stack Developer with deep expertise in Laravel, APIs, Database Architecture, and modern frontend ecosystems.',
+            'role' => 'Backend & Full-Stack Developer',
+            'bio' => 'Backend Laravel Developer with strong practical experience building robust backend architectures and full-stack systems. Specialized in PHP, Laravel, MySQL, and modern frontend tools like React and Tailwind CSS.',
             'order' => 1,
         ]);
 
         $eman = TeamMember::create([
             'name' => 'Eman Alaa',
             'slug' => 'eman-alaa',
-            'role' => 'DevOps Engineer',
-            'bio' => 'Infrastructure specialist focusing on Deployment, CI/CD, Server environments, and Monitoring.',
+            'role' => 'Cloud & DevSecOps Engineer',
+            'bio' => 'Cloud & DevSecOps Engineer with robust hands-on expertise in AWS infrastructure, Linux system administration, and containerization. Architecting auto-healing cloud environments and CI/CD workflows.',
             'order' => 2,
         ]);
 
         $banseh = TeamMember::create([
             'name' => 'Banseh Salah',
             'slug' => 'banseh-salah',
-            'role' => 'QA Engineer',
-            'bio' => 'Software Quality Assurance Engineer specialized in Manual Testing, Test Cases, and Regression Testing.',
+            'role' => 'Junior Penetration Tester',
+            'bio' => 'Cybersecurity specialist with hands-on experience in Web Application and API Penetration Testing. Strong understanding of OWASP Top 10, Authentication, API Security, and secure software development practices.',
             'order' => 3,
         ]);
 
         // 3. Skills & Technologies
-        $techNames = ['Laravel', 'React', 'MySQL', 'Docker', 'AWS', 'PHP', 'JavaScript', 'TailwindCSS'];
+        $techNames = ['Laravel', 'React', 'MySQL', 'Docker', 'AWS', 'PHP', 'JavaScript', 'TailwindCSS', 'Terraform', 'Kubernetes', 'Linux', 'Nginx', 'GitHub Actions', 'Jenkins', 'Ansible', 'Redis', 'Python', 'Penetration Testing', 'OWASP', 'Burp Suite', 'Postman', 'SQL', 'C++', 'Bootstrap', 'HTML', 'CSS', 'Alpine.js', 'Git'];
         foreach ($techNames as $tech) {
             Technology::create(['name' => $tech, 'slug' => Str::slug($tech)]);
             Skill::create(['name' => $tech]); // Keep simple parity for dummy data
         }
 
         // Attach skills
-        $felopater->skills()->attach(Skill::whereIn('name', ['Laravel', 'PHP', 'React', 'MySQL', 'JavaScript', 'TailwindCSS'])->pluck('id'));
-        $eman->skills()->attach(Skill::whereIn('name', ['Docker', 'AWS', 'MySQL'])->pluck('id'));
-        $banseh->skills()->attach(Skill::whereIn('name', ['JavaScript'])->pluck('id'));
+        $felopater->skills()->attach(Skill::whereIn('name', ['PHP', 'Laravel', 'React', 'MySQL', 'JavaScript', 'TailwindCSS', 'Bootstrap', 'HTML', 'CSS', 'Alpine.js', 'Docker', 'Git'])->pluck('id'));
+        $eman->skills()->attach(Skill::whereIn('name', ['Docker', 'AWS', 'MySQL', 'Terraform', 'Kubernetes', 'Linux', 'Nginx', 'GitHub Actions', 'Jenkins', 'Ansible', 'Redis'])->pluck('id'));
+        $banseh->skills()->attach(Skill::whereIn('name', ['Penetration Testing', 'OWASP', 'Burp Suite', 'Postman', 'Python', 'C++', 'SQL', 'JavaScript', 'PHP', 'Laravel', 'Linux'])->pluck('id'));
 
         // 4. Categories
         $catWeb = Category::create(['name' => 'Web Application', 'slug' => 'web-application']);
