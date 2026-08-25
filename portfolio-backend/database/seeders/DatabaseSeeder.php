@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
         $banseh = TeamMember::create([
             'name' => 'Banseh Salah',
             'slug' => 'banseh-salah',
-            'role' => 'Junior Penetration Tester',
+            'role' => 'Penetration Tester',
             'bio' => 'Cybersecurity specialist with hands-on experience in Web Application and API Penetration Testing. Strong understanding of OWASP Top 10, Authentication, API Security, and secure software development practices.',
             'image_url' => '/images/team/banseh.jpg',
             'order' => 3,
