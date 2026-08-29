@@ -1,18 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/lib/api/client';
+import { db } from '@/lib/firebase/config';
+import { collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export interface AdminTeamMember {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   role: string;
+  department: 'backend' | 'devops' | 'pentesting' | 'none';
   email: string;
+  phone?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
   bio: string | null;
   image_url: string | null;
   is_active: boolean;
   order: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const adminTeamKeys = {
@@ -20,25 +25,37 @@ export const adminTeamKeys = {
   lists: () => [...adminTeamKeys.all, 'list'] as const,
   list: (filters: Record<string, any>) => [...adminTeamKeys.lists(), filters] as const,
   details: () => [...adminTeamKeys.all, 'detail'] as const,
-  detail: (id: number) => [...adminTeamKeys.details(), id] as const,
+  detail: (id: string) => [...adminTeamKeys.details(), id] as const,
 };
 
 export const useAdminTeamMembers = (filters: Record<string, any> = {}) => {
-  return useQuery<{ data: AdminTeamMember[], meta?: any }, ApiError>({
+  return useQuery<{ data: AdminTeamMember[], meta?: any }, Error>({
     queryKey: adminTeamKeys.list(filters),
     queryFn: async () => {
-      const response = await apiClient.get('/api/admin/team-members', { params: filters });
-      return response.data;
+      const q = query(collection(db, 'team'), orderBy('order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const members = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as AdminTeamMember[];
+      
+      return { data: members };
     },
   });
 };
 
-export const useAdminTeamMember = (id: number) => {
-  return useQuery<{ data: AdminTeamMember }, ApiError>({
+export const useAdminTeamMember = (id: string) => {
+  return useQuery<{ data: AdminTeamMember }, Error>({
     queryKey: adminTeamKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/team-members/${id}`);
-      return response.data;
+      const docRef = doc(db, 'team', id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Team member not found');
+      }
+      
+      return { data: { id: docSnap.id, ...docSnap.data() } as AdminTeamMember };
     },
     enabled: !!id,
   });
@@ -46,10 +63,15 @@ export const useAdminTeamMember = (id: number) => {
 
 export const useCreateTeamMember = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ data: AdminTeamMember }, ApiError, Partial<AdminTeamMember>>({
+  return useMutation<{ data: AdminTeamMember }, Error, Partial<AdminTeamMember>>({
     mutationFn: async (data) => {
-      const response = await apiClient.post('/api/admin/team-members', data);
-      return response.data;
+      const docRef = await addDoc(collection(db, 'team'), {
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      
+      return { data: { id: docRef.id, ...data } as AdminTeamMember };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminTeamKeys.lists() });
@@ -59,10 +81,15 @@ export const useCreateTeamMember = () => {
 
 export const useUpdateTeamMember = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ data: AdminTeamMember }, ApiError, { id: number, data: Partial<AdminTeamMember> }>({
+  return useMutation<{ data: AdminTeamMember }, Error, { id: string, data: Partial<AdminTeamMember> }>({
     mutationFn: async ({ id, data }) => {
-      const response = await apiClient.put(`/api/admin/team-members/${id}`, data);
-      return response.data;
+      const docRef = doc(db, 'team', id);
+      await updateDoc(docRef, {
+        ...data,
+        updated_at: new Date().toISOString(),
+      });
+      
+      return { data: { id, ...data } as AdminTeamMember };
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: adminTeamKeys.lists() });
@@ -73,9 +100,10 @@ export const useUpdateTeamMember = () => {
 
 export const useDeleteTeamMember = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, ApiError, number>({
+  return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      await apiClient.delete(`/api/admin/team-members/${id}`);
+      const docRef = doc(db, 'team', id);
+      await deleteDoc(docRef);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminTeamKeys.lists() });

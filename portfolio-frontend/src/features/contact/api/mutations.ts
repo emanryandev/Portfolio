@@ -1,13 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
-import { ContactRequestPayload } from '../types';
+import { db } from '@/lib/firebase/config';
+import { collection, addDoc } from 'firebase/firestore';
+import { ContactRequest } from '../types';
 
 export const useSubmitContactRequest = () => {
   return useMutation({
-    mutationFn: async (payload: ContactRequestPayload) => {
-      // CSRF token is handled by Axios interceptor / withCredentials
-      const { data } = await apiClient.post('/api/contact', payload);
-      return data;
+    mutationFn: async (payload: Omit<ContactRequest, 'id'>) => {
+      const docRef = await addDoc(collection(db, 'contact_requests'), {
+        ...payload,
+        status: 'new',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      return { ...payload, id: docRef.id };
     },
   });
 };

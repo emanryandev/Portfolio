@@ -14,7 +14,7 @@ export default function TeamList() {
   const deleteMutation = useDeleteTeamMember();
   
   // We will build a reusable ConfirmDialog later, for now we use a simple window.confirm to block
-  const handleDelete = async (id: number, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (window.confirm(`Delete team member "${name}"? This action cannot be undone.`)) {
       try {
         await deleteMutation.mutateAsync(id);

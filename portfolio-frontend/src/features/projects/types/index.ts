@@ -16,9 +16,10 @@ export interface ProjectContribution {
 }
 
 export interface Project {
-  id: number;
+  id: string;
   name: string;
   slug: string;
+  summary?: string;
   description: string;
   status: 'draft' | 'in_progress' | 'completed';
   category_id: number | null;

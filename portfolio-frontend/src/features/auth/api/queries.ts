@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/lib/api/client';
+import { auth } from '@/lib/firebase/config';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
-  email: string;
+  email: string | null;
 }
 
 export const authKeys = {
@@ -13,13 +14,32 @@ export const authKeys = {
 };
 
 export const useUser = () => {
-  return useQuery<User, ApiError>({
+  return useQuery<User | null, Error>({
     queryKey: authKeys.user(),
-    queryFn: async () => {
-      const response = await apiClient.get('/api/user');
-      return response.data;
+    queryFn: () => {
+      return new Promise((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(
+          auth,
+          (user) => {
+            unsubscribe();
+            if (user) {
+              resolve({
+                id: user.uid,
+                name: user.displayName || 'Admin',
+                email: user.email,
+              });
+            } else {
+              reject(new Error('Not authenticated'));
+            }
+          },
+          (error) => {
+            unsubscribe();
+            reject(error);
+          }
+        );
+      });
     },
     retry: false, // Don't retry if 401
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: Infinity, // Rely on Firebase listener or manual invalidation
   });
 };

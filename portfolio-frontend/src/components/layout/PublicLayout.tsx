@@ -8,6 +8,7 @@ import {
   DrawerTrigger,
   DrawerClose,
 } from '@/components/ui/drawer';
+import { useSettings } from '@/features/settings/api/queries';
 
 const navLinks = [
   { name: 'Home', path: '/' },
@@ -20,16 +21,25 @@ const navLinks = [
 export function PublicLayout() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { data: settings } = useSettings();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground relative">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 relative">
+      <header className="sticky top-0 z-50 w-full border-b border-border/20 bg-[#000002]">
+        <div className="container flex h-24 max-w-screen-2xl items-center justify-between px-4 relative">
           {/* Logo */}
           <div className="flex items-center gap-6 md:gap-10">
             <Link to="/" className="flex items-center space-x-2 z-10">
-              <span className="font-bold inline-block text-xl tracking-tight">Synapse</span>
+              {settings?.logo_url ? (
+                <img 
+                  src={settings.logo_url} 
+                  alt={settings.site_name || 'Logo'} 
+                  className="h-20 md:h-24 w-auto object-contain transition-transform hover:scale-105" 
+                />
+              ) : (
+                <span className="font-bold inline-block text-xl tracking-tight">{settings?.site_name || 'Synapse'}</span>
+              )}
             </Link>
           </div>
           
@@ -104,7 +114,7 @@ export function PublicLayout() {
       <footer className="border-t border-border/20 py-8 relative z-10 bg-background/50">
         <div className="container px-4 max-w-screen-2xl flex flex-col items-center justify-between gap-4 md:flex-row">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by Synapse. All rights reserved.
+            Built by {settings?.site_name || 'Synapse'}. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>

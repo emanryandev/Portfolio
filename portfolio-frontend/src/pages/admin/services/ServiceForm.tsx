@@ -17,6 +17,7 @@ import { ArrowLeft, Loader2, Save, Trash2, Plus } from 'lucide-react';
 const serviceSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description needs to be longer'),
+  category: z.enum(['global', 'backend', 'devops', 'pentesting']),
   price_type: z.enum(['fixed', 'starting_at', 'custom']),
   price: z.string().optional().nullable(),
   features: z.array(z.object({ value: z.string() })).min(1, 'Add at least one feature'),
@@ -32,7 +33,7 @@ export default function ServiceForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
 
-  const { data: response, isLoading: isLoadingData } = useAdminService(isEditing ? Number(id) : 0);
+  const { data: response, isLoading: isLoadingData } = useAdminService(isEditing ? (id as string) : '');
   const createMutation = useCreateService();
   const updateMutation = useUpdateService();
 
@@ -41,6 +42,7 @@ export default function ServiceForm() {
     defaultValues: {
       name: '',
       description: '',
+      category: 'global',
       price_type: 'custom',
       price: '',
       features: [{ value: '' }],
@@ -60,6 +62,7 @@ export default function ServiceForm() {
       form.reset({
         name: response.data.name,
         description: response.data.description,
+        category: response.data.category || 'global',
         price_type: response.data.price_type,
         price: response.data.price || '',
         features: response.data.features.map(f => ({ value: f })),
@@ -81,7 +84,7 @@ export default function ServiceForm() {
       };
 
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: Number(id), data: payload });
+        await updateMutation.mutateAsync({ id: id as string, data: payload });
       } else {
         await createMutation.mutateAsync(payload);
       }
@@ -191,6 +194,21 @@ export default function ServiceForm() {
                 <CardTitle>Pricing</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <select 
+                    id="category" 
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isSaving}
+                    {...form.register('category')}
+                  >
+                    <option value="global">Global (Team)</option>
+                    <option value="backend">Backend / Fullstack</option>
+                    <option value="devops">DevOps</option>
+                    <option value="pentesting">Pentesting</option>
+                  </select>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="price_type">Price Type</Label>
                   <select 

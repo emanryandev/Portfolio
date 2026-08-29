@@ -33,7 +33,7 @@ export function FeaturedProjects() {
         {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="border-border/40 overflow-hidden">
+              <Card key={`skeleton-${i}`} className="border-border/40 overflow-hidden">
                 <Skeleton className="h-64 w-full rounded-none" />
                 <CardHeader>
                   <Skeleton className="h-6 w-2/3 mb-2" />
@@ -61,13 +61,18 @@ export function FeaturedProjects() {
 
         {!isLoading && featured.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featured.map((project) => (
-              <Card key={project.id} className="group overflow-hidden border-border/40 bg-card hover:border-primary/20 transition-colors flex flex-col">
+            {featured.map((project) => {
+              const title = project.name || '';
+              const desc = project.summary || project.description || '';
+              const imageUrl = project.cover_image;
+
+              return (
+              <Card key={`project-${project.id}`} className="group overflow-hidden border-border/40 bg-card hover:border-primary/20 transition-colors flex flex-col">
                 <div className="aspect-[4/3] overflow-hidden bg-muted">
-                  {project.cover_image ? (
+                  {imageUrl ? (
                     <img 
-                      src={project.cover_image} 
-                      alt={project.name} 
+                      src={imageUrl} 
+                      alt={title} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
@@ -79,18 +84,18 @@ export function FeaturedProjects() {
                 </div>
                 <CardHeader>
                   <div className="flex justify-between items-start gap-4">
-                    <CardTitle className="line-clamp-1">{project.name}</CardTitle>
+                    <CardTitle className="line-clamp-1">{title}</CardTitle>
                     {project.status === 'completed' && <Badge variant="secondary" className="shrink-0">Completed</Badge>}
                   </div>
                   <CardDescription className="line-clamp-2 mt-2">
-                    {project.description}
+                    {desc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="flex flex-wrap gap-2">
-                    {project.technologies?.slice(0, 3).map(tech => (
-                      <Badge key={tech.id} variant="outline" className="bg-background/50 text-xs">
-                        {tech.name}
+                    {project.technologies?.slice(0, 3).map((tech: any, idx: number) => (
+                      <Badge key={`tech-${project.id}-${tech.id || idx}`} variant="outline" className="bg-background/50 text-xs">
+                        {typeof tech === 'string' ? tech : tech.name}
                       </Badge>
                     ))}
                     {project.technologies && project.technologies.length > 3 && (
@@ -108,7 +113,7 @@ export function FeaturedProjects() {
                   </Link>
                 </CardFooter>
               </Card>
-            ))}
+            )})}
           </div>
         )}
       </div>

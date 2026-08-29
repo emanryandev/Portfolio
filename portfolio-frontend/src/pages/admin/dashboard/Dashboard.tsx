@@ -101,10 +101,10 @@ export default function Dashboard() {
                   <div key={project.id} className="flex items-center justify-between p-3 border rounded-md bg-card hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/projects/${project.id}/edit`)}>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-sm bg-secondary overflow-hidden shrink-0">
-                        {project.image_url && <img src={project.image_url} alt="" className="w-full h-full object-cover" />}
+                        {project.cover_image && <img src={project.cover_image} alt="" className="w-full h-full object-cover" />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium leading-none">{project.title}</p>
+                        <p className="text-sm font-medium leading-none">{project.name}</p>
                         <p className="text-xs text-muted-foreground mt-1">{project.slug}</p>
                       </div>
                     </div>
@@ -138,11 +138,11 @@ export default function Dashboard() {
                   <div key={req.id} className="flex items-start justify-between p-3 border rounded-md bg-card hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/contacts/${req.id}`)}>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{req.client_name}</span>
+                        <span className="text-sm font-medium">{req.name}</span>
                         {req.status === 'new' && <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">New</Badge>}
                         {req.status === 'in_progress' && <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">In Progress</Badge>}
                       </div>
-                      <p className="text-xs text-muted-foreground">{req.client_email}</p>
+                      <p className="text-xs text-muted-foreground">{req.email}</p>
                       <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{req.message}</p>
                     </div>
                     <div className="text-[10px] text-muted-foreground whitespace-nowrap ml-4">

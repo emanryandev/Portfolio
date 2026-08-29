@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/lib/api/client';
+import { auth } from '@/lib/firebase/config';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { authKeys, User } from './queries';
 
 export interface LoginCredentials {
@@ -11,17 +12,16 @@ export interface LoginCredentials {
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<User, ApiError, LoginCredentials>({
+  return useMutation<User, Error, LoginCredentials>({
     mutationFn: async (credentials) => {
-      // 1. Fetch CSRF cookie
-      await apiClient.get('/sanctum/csrf-cookie');
+      const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+      const user = userCredential.user;
       
-      // 2. Perform Login
-      await apiClient.post('/api/login', credentials);
-      
-      // 3. Fetch User profile
-      const response = await apiClient.get('/api/user');
-      return response.data;
+      return {
+        id: user.uid,
+        name: user.displayName || 'Admin',
+        email: user.email,
+      };
     },
     onSuccess: (user) => {
       queryClient.setQueryData(authKeys.user(), user);
@@ -32,9 +32,9 @@ export const useLogin = () => {
 export const useLogout = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ApiError>({
+  return useMutation<void, Error>({
     mutationFn: async () => {
-      await apiClient.post('/api/logout');
+      await signOut(auth);
     },
     onSuccess: () => {
       queryClient.setQueryData(authKeys.user(), null);

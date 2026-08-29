@@ -17,9 +17,13 @@ import { ArrowLeft, Loader2, Save } from 'lucide-react';
 const teamMemberSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   role: z.string().min(2, 'Role is required'),
-  email: z.string().email('Valid email is required'),
+  email: z.string().email('Valid email is required').or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  linkedin: z.string().optional().or(z.literal('')),
+  github: z.string().optional().or(z.literal('')),
   bio: z.string().optional(),
-  image_url: z.string().url().optional().or(z.literal('')),
+  department: z.enum(['backend', 'devops', 'pentesting', 'none']).default('none'),
+  image_url: z.string().optional().or(z.literal('')),
   is_active: z.boolean().default(true),
   order: z.number().int().default(0),
 });
@@ -31,7 +35,7 @@ export default function TeamForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
 
-  const { data: response, isLoading: isLoadingData } = useAdminTeamMember(isEditing ? Number(id) : 0);
+  const { data: response, isLoading: isLoadingData } = useAdminTeamMember(isEditing ? (id as string) : '');
   const createMutation = useCreateTeamMember();
   const updateMutation = useUpdateTeamMember();
 
@@ -41,6 +45,10 @@ export default function TeamForm() {
       name: '',
       role: '',
       email: '',
+      phone: '',
+      linkedin: '',
+      github: '',
+      department: 'none',
       bio: '',
       image_url: '',
       is_active: true,
@@ -53,7 +61,11 @@ export default function TeamForm() {
       form.reset({
         name: response.data.name,
         role: response.data.role,
-        email: response.data.email,
+        email: response.data.email || '',
+        phone: response.data.phone || '',
+        linkedin: response.data.linkedin || '',
+        github: response.data.github || '',
+        department: response.data.department || 'none',
         bio: response.data.bio || '',
         image_url: response.data.image_url || '',
         is_active: response.data.is_active,
@@ -67,7 +79,7 @@ export default function TeamForm() {
   const onSubmit = async (data: TeamMemberFormValues) => {
     try {
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: Number(id), data });
+        await updateMutation.mutateAsync({ id: id as string, data });
       } else {
         await createMutation.mutateAsync(data);
       }
@@ -126,6 +138,27 @@ export default function TeamForm() {
                   <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input id="phone" type="tel" disabled={isSaving} {...form.register('phone')} />
+                {form.formState.errors.phone && (
+                  <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="linkedin">LinkedIn URL</Label>
+                <Input id="linkedin" type="url" disabled={isSaving} {...form.register('linkedin')} />
+                {form.formState.errors.linkedin && (
+                  <p className="text-sm text-destructive">{form.formState.errors.linkedin.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="github">GitHub URL</Label>
+                <Input id="github" type="url" disabled={isSaving} {...form.register('github')} />
+                {form.formState.errors.github && (
+                  <p className="text-sm text-destructive">{form.formState.errors.github.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -133,6 +166,24 @@ export default function TeamForm() {
               <Input id="role" placeholder="e.g. Senior Frontend Developer" disabled={isSaving} {...form.register('role')} />
               {form.formState.errors.role && (
                 <p className="text-sm text-destructive">{form.formState.errors.role.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Department / Speciality</Label>
+              <select 
+                id="department" 
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isSaving}
+                {...form.register('department')}
+              >
+                <option value="none">None (General)</option>
+                <option value="backend">Backend / Fullstack</option>
+                <option value="devops">DevOps & Cloud</option>
+                <option value="pentesting">Pentesting & Security</option>
+              </select>
+              {form.formState.errors.department && (
+                <p className="text-sm text-destructive">{form.formState.errors.department.message}</p>
               )}
             </div>
 

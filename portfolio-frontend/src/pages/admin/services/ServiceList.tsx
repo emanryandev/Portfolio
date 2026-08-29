@@ -12,7 +12,7 @@ export default function ServiceList() {
   const { data: response, isLoading, isError, refetch } = useAdminServices();
   const deleteMutation = useDeleteService();
   
-  const handleDelete = async (id: number, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (window.confirm(`Delete service "${name}"? This action cannot be undone.`)) {
       try {
         await deleteMutation.mutateAsync(id);

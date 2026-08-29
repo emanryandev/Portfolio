@@ -1,19 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/lib/api/client';
+import { db } from '@/lib/firebase/config';
+import { collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export interface AdminService {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string;
+  category: 'global' | 'backend' | 'devops' | 'pentesting';
   price_type: 'fixed' | 'starting_at' | 'custom';
   price: string | null;
-  features: string[]; // JSON array in DB
+  features: string[];
   is_active: boolean;
   is_featured: boolean;
   order: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const adminServiceKeys = {
@@ -21,25 +23,37 @@ export const adminServiceKeys = {
   lists: () => [...adminServiceKeys.all, 'list'] as const,
   list: (filters: Record<string, any>) => [...adminServiceKeys.lists(), filters] as const,
   details: () => [...adminServiceKeys.all, 'detail'] as const,
-  detail: (id: number) => [...adminServiceKeys.details(), id] as const,
+  detail: (id: string) => [...adminServiceKeys.details(), id] as const,
 };
 
 export const useAdminServices = (filters: Record<string, any> = {}) => {
-  return useQuery<{ data: AdminService[], meta?: any }, ApiError>({
+  return useQuery<{ data: AdminService[], meta?: any }, Error>({
     queryKey: adminServiceKeys.list(filters),
     queryFn: async () => {
-      const response = await apiClient.get('/api/admin/services', { params: filters });
-      return response.data;
+      const q = query(collection(db, 'services'), orderBy('order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const services = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as AdminService[];
+      
+      return { data: services };
     },
   });
 };
 
-export const useAdminService = (id: number) => {
-  return useQuery<{ data: AdminService }, ApiError>({
+export const useAdminService = (id: string) => {
+  return useQuery<{ data: AdminService }, Error>({
     queryKey: adminServiceKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/services/${id}`);
-      return response.data;
+      const docRef = doc(db, 'services', id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Service not found');
+      }
+      
+      return { data: { id: docSnap.id, ...docSnap.data() } as AdminService };
     },
     enabled: !!id,
   });
@@ -47,10 +61,15 @@ export const useAdminService = (id: number) => {
 
 export const useCreateService = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ data: AdminService }, ApiError, Partial<AdminService>>({
+  return useMutation<{ data: AdminService }, Error, Partial<AdminService>>({
     mutationFn: async (data) => {
-      const response = await apiClient.post('/api/admin/services', data);
-      return response.data;
+      const docRef = await addDoc(collection(db, 'services'), {
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      
+      return { data: { id: docRef.id, ...data } as AdminService };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminServiceKeys.lists() });
@@ -60,10 +79,15 @@ export const useCreateService = () => {
 
 export const useUpdateService = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ data: AdminService }, ApiError, { id: number, data: Partial<AdminService> }>({
+  return useMutation<{ data: AdminService }, Error, { id: string, data: Partial<AdminService> }>({
     mutationFn: async ({ id, data }) => {
-      const response = await apiClient.put(`/api/admin/services/${id}`, data);
-      return response.data;
+      const docRef = doc(db, 'services', id);
+      await updateDoc(docRef, {
+        ...data,
+        updated_at: new Date().toISOString(),
+      });
+      
+      return { data: { id, ...data } as AdminService };
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: adminServiceKeys.lists() });
@@ -74,9 +98,10 @@ export const useUpdateService = () => {
 
 export const useDeleteService = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, ApiError, number>({
+  return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      await apiClient.delete(`/api/admin/services/${id}`);
+      const docRef = doc(db, 'services', id);
+      await deleteDoc(docRef);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminServiceKeys.lists() });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProjects } from '@/features/projects/api/queries';
 import { SEO } from '@/components/shared/SEO';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,10 +16,12 @@ export default function ProjectsIndex() {
   
   const projects = response?.data || [];
   
-  const filteredProjects = projects.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProjects = projects.filter(p => {
+    const title = p.name || '';
+    const desc = p.summary || p.description || '';
+    return title.toLowerCase().includes(search.toLowerCase()) || 
+           desc.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden">
@@ -98,7 +100,9 @@ export default function ProjectsIndex() {
           {!isLoading && filteredProjects.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project) => {
-                const text = (project.name + ' ' + project.description).toLowerCase();
+                const title = project.name || '';
+                const desc = project.summary || project.description || '';
+                const text = (title + ' ' + desc).toLowerCase();
                 let accentClass = 'hover:border-primary/50 hover:shadow-primary/10';
                 if (text.includes('finance') || text.includes('fintech') || text.includes('data') || text.includes('bank') || text.includes('crypto')) {
                   accentClass = 'hover:border-emerald-500/50 hover:shadow-emerald-500/10';
@@ -108,14 +112,16 @@ export default function ProjectsIndex() {
                   accentClass = 'hover:border-cyan-500/50 hover:shadow-cyan-500/10';
                 }
                 
+                const imageUrl = project.cover_image;
+                
                 return (
                 <Card key={project.id} className={`group overflow-hidden border-border/20 bg-card/40 backdrop-blur-sm transition-all duration-300 flex flex-col shadow-sm hover:shadow-lg ${accentClass}`}>
                   <Link to={`/projects/${project.slug}`} className="block flex-1 flex flex-col">
                     <div className="aspect-[4/3] overflow-hidden bg-muted/20 relative">
-                      {project.cover_image ? (
+                      {imageUrl ? (
                         <img 
-                          src={project.cover_image} 
-                          alt={project.name} 
+                          src={imageUrl} 
+                          alt={title} 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                           loading="lazy"
                         />
@@ -129,19 +135,19 @@ export default function ProjectsIndex() {
                     <CardHeader className="relative z-10">
                       <div className="flex justify-between items-start gap-4">
                         <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors text-xl">
-                          {project.name}
+                          {title}
                         </CardTitle>
                         {project.is_featured && <Badge className="shrink-0 bg-primary/20 text-primary border-0">Featured</Badge>}
                       </div>
                       <CardDescription className="line-clamp-2 mt-2 text-muted-foreground/80">
-                        {project.description}
+                        {project.summary || project.description}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 relative z-10">
                       <div className="flex flex-wrap gap-2">
-                        {project.technologies?.slice(0, 4).map(tech => (
-                          <Badge key={tech.id} variant="outline" className="bg-background/50 text-xs border-border/40 text-muted-foreground">
-                            {tech.name}
+                        {project.technologies?.slice(0, 4).map((tech: any, idx: number) => (
+                          <Badge key={tech.id || idx} variant="outline" className="bg-background/50 text-xs border-border/40 text-muted-foreground">
+                            {typeof tech === 'string' ? tech : tech.name}
                           </Badge>
                         ))}
                         {project.technologies && project.technologies.length > 4 && (

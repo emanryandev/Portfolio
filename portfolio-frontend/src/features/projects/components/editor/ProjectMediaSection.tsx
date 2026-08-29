@@ -14,7 +14,7 @@ export function ProjectMediaSection() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const imageUrl = watch('image_url');
+  const imageUrl = watch('cover_image');
   const uploadMutation = useUploadMedia();
 
   const handleFile = async (file: File) => {
@@ -33,7 +33,7 @@ export function ProjectMediaSection() {
     try {
       const response = await uploadMutation.mutateAsync(file);
       // Attach URL to project form directly
-      setValue('image_url', response.url, { shouldDirty: true, shouldValidate: true });
+      setValue('cover_image', response.url, { shouldDirty: true, shouldValidate: true });
     } catch (err: any) {
       setUploadError(err.message || 'Upload failed. Please try again.');
     }
@@ -56,14 +56,17 @@ export function ProjectMediaSection() {
         
         {/* URL Input Fallback */}
         <div className="space-y-2">
-          <Label htmlFor="image_url">Image URL</Label>
-          <Input 
-            id="image_url" 
-            {...register('image_url')} 
-            placeholder="https://..."
-            disabled={uploadMutation.isPending}
-          />
-          {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+          <Label htmlFor="cover_image">Cover Image URL</Label>
+          <div className="flex gap-2">
+            <Input 
+              id="cover_image" 
+              {...register('cover_image')} 
+              placeholder="https://images.unsplash.com/..." 
+              className="flex-1"
+              disabled={uploadMutation.isPending}
+            />
+          </div>
+          {errors.cover_image && <p className="text-sm text-destructive">{errors.cover_image.message}</p>}
         </div>
 
         {/* Drag & Drop Area */}
@@ -92,7 +95,7 @@ export function ProjectMediaSection() {
                   variant="destructive"
                   size="icon"
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => setValue('image_url', '', { shouldDirty: true, shouldValidate: true })}
+                  onClick={() => setValue('cover_image', '', { shouldDirty: true, shouldValidate: true })}
                 >
                   <X className="w-4 h-4" />
                 </Button>

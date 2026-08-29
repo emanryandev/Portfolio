@@ -55,7 +55,9 @@ export function TeamOverview() {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                       />
                     ) : (
-                      <User className="w-12 h-12 text-muted-foreground transition-colors duration-500 group-hover:text-primary/70" />
+                      <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-4xl">
+                        {member.name ? member.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : '??'}
+                      </div>
                     )}
                   </div>
                   <CardHeader className="w-full relative z-10 pb-2">

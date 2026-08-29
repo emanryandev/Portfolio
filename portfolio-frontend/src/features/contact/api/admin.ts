@@ -1,21 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/lib/api/client';
+import { db } from '@/lib/firebase/config';
+import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 
 export interface AdminContactRequest {
-  id: number;
-  client_name: string;
-  client_email: string;
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
   company_name: string | null;
   project_type: string;
-  budget_range: string | null;
+  budget_range?: string | null;
+  budget?: string;
+  service_id?: string;
   message: string;
+  recipients?: string[];
   status: 'new' | 'in_progress' | 'completed' | 'archived';
   created_at: string;
   updated_at: string;
-  recipients?: Array<{
-    team_member_id: number;
-    team_member?: { name: string };
-  }>;
 }
 
 export const adminContactKeys = {
@@ -23,25 +24,42 @@ export const adminContactKeys = {
   lists: () => [...adminContactKeys.all, 'list'] as const,
   list: (filters: Record<string, any>) => [...adminContactKeys.lists(), filters] as const,
   details: () => [...adminContactKeys.all, 'detail'] as const,
-  detail: (id: number) => [...adminContactKeys.details(), id] as const,
+  detail: (id: string) => [...adminContactKeys.details(), id] as const,
 };
 
 export const useAdminContactRequests = (filters: Record<string, any> = {}) => {
-  return useQuery<{ data: AdminContactRequest[], meta?: any }, ApiError>({
+  return useQuery<{ data: AdminContactRequest[], meta?: any }, Error>({
     queryKey: adminContactKeys.list(filters),
     queryFn: async () => {
-      const response = await apiClient.get('/api/admin/contact-requests', { params: filters });
-      return response.data;
+      let q = query(collection(db, 'contact_requests'), orderBy('created_at', 'desc'));
+      
+      if (filters.status) {
+        q = query(collection(db, 'contact_requests'), where('status', '==', filters.status), orderBy('created_at', 'desc'));
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const contacts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as AdminContactRequest[];
+      
+      return { data: contacts };
     },
   });
 };
 
-export const useAdminContactRequest = (id: number) => {
-  return useQuery<{ data: AdminContactRequest }, ApiError>({
+export const useAdminContactRequest = (id: string) => {
+  return useQuery<{ data: AdminContactRequest }, Error>({
     queryKey: adminContactKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/contact-requests/${id}`);
-      return response.data;
+      const docRef = doc(db, 'contact_requests', id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Contact request not found');
+      }
+      
+      return { data: { id: docSnap.id, ...docSnap.data() } as AdminContactRequest };
     },
     enabled: !!id,
   });
@@ -51,10 +69,14 @@ export const useAdminContactRequest = (id: number) => {
 export const useUpdateContactStatus = () => {
   const queryClient = useQueryClient();
   
-  return useMutation<{ data: AdminContactRequest }, ApiError, { id: number, status: string }>({
+  return useMutation<{ data: AdminContactRequest }, Error, { id: string, status: string }>({
     mutationFn: async ({ id, status }) => {
-      const response = await apiClient.put(`/api/admin/contact-requests/${id}`, { status });
-      return response.data;
+      const docRef = doc(db, 'contact_requests', id);
+      await updateDoc(docRef, {
+        status,
+        updated_at: new Date().toISOString(),
+      });
+      return { data: { id, status } as any }; // Partial return for optimistic update
     },
     onMutate: async ({ id, status }) => {
       // Cancel any outgoing refetches
@@ -104,9 +126,10 @@ export const useUpdateContactStatus = () => {
 
 export const useDeleteContactRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, ApiError, number>({
+  return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      await apiClient.delete(`/api/admin/contact-requests/${id}`);
+      const docRef = doc(db, 'contact_requests', id);
+      await deleteDoc(docRef);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminContactKeys.lists() });

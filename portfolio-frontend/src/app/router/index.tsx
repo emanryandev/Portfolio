@@ -28,7 +28,7 @@ const ServiceForm = React.lazy(() => import('@/pages/admin/services/ServiceForm'
 const ContactList = React.lazy(() => import('@/pages/admin/contacts/ContactList'));
 const ContactDetail = React.lazy(() => import('@/pages/admin/contacts/ContactDetail'));
 const Dashboard = React.lazy(() => import('@/pages/admin/dashboard/Dashboard'));
-const SettingsStub = React.lazy(() => import('@/pages/admin/settings/SettingsStub'));
+const Settings = React.lazy(() => import('@/pages/admin/settings/Settings'));
 
 // Development-only Routes
 const DesignSystem = React.lazy(() => import('@/pages/DesignSystem'));
@@ -109,7 +109,7 @@ const routes = [
           { path: 'services/:id/edit', element: <SuspenseWrapper><ServiceForm /></SuspenseWrapper> },
           { path: 'contacts', element: <SuspenseWrapper><ContactList /></SuspenseWrapper> },
           { path: 'contacts/:id', element: <SuspenseWrapper><ContactDetail /></SuspenseWrapper> },
-          { path: 'settings', element: <SuspenseWrapper><SettingsStub /></SuspenseWrapper> },
+          { path: 'settings', element: <SuspenseWrapper><Settings /></SuspenseWrapper> },
         ],
       },
     ],

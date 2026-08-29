@@ -9,7 +9,7 @@ const About: React.FC = () => {
       <AmbientCodeBackground intensity="low" />
       <SEO 
         title="About Us" 
-        description="We are a highly capable engineering unit combining Full-Stack Development, DevOps, and QA to build production-ready web products." 
+        description="We are a highly capable engineering unit combining Full-Stack Development, DevOps, and Pentesting to build production-ready, secure web products." 
         url="https://yourdomain.com/about"
         type="website"
       />
@@ -18,7 +18,7 @@ const About: React.FC = () => {
         <section className="space-y-6">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Who We Are</h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            We are a small, highly capable engineering unit that takes web products from development through deployment and quality assurance.
+            We are a small, highly capable engineering unit that takes web products from development through deployment and rigorous security pentesting.
           </p>
         </section>
 
@@ -34,8 +34,8 @@ const About: React.FC = () => {
               <p className="text-muted-foreground">Automating deployments, managing CI/CD pipelines, and ensuring high availability.</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border">
-              <h3 className="font-semibold text-lg mb-2">QA & Testing</h3>
-              <p className="text-muted-foreground">Rigorous testing methodologies to guarantee production-ready software quality.</p>
+              <h3 className="font-semibold text-lg mb-2">Pentesting & Security</h3>
+              <p className="text-muted-foreground">Comprehensive security assessments and penetration testing to ensure robust protection.</p>
             </div>
           </div>
         </section>
@@ -47,7 +47,7 @@ const About: React.FC = () => {
             <div className="text-primary hidden md:block">→</div>
             <div className="text-center font-medium">Development</div>
             <div className="text-primary hidden md:block">→</div>
-            <div className="text-center font-medium">QA</div>
+            <div className="text-center font-medium">Pentesting</div>
             <div className="text-primary hidden md:block">→</div>
             <div className="text-center font-medium">Deployment</div>
           </div>

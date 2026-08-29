@@ -22,7 +22,7 @@ export function ProjectTeamSection() {
 
   const addContribution = () => {
     append({
-      team_member_id: 0,
+      team_member_id: '',
       role: '',
       contribution_description: '',
       order: fields.length
@@ -50,13 +50,13 @@ export function ProjectTeamSection() {
               const fieldError = errors.team_contributions?.[index];
 
               return (
-                <div key={field.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-md relative bg-secondary/5">
-                  <div className="md:col-span-3 space-y-2">
+                <div key={field.id} className="flex flex-col md:flex-row gap-4 p-4 border rounded-md relative bg-secondary/5 items-start">
+                  <div className="flex-1 space-y-2 w-full">
                     <Label>Team Member</Label>
                     <Select 
-                      value={selectedMemberId ? selectedMemberId.toString() : ''} 
+                      value={selectedMemberId || ''} 
                       onValueChange={(val) => {
-                        setValue(`team_contributions.${index}.team_member_id`, Number(val), { shouldValidate: true, shouldDirty: true });
+                        setValue(`team_contributions.${index}.team_member_id`, val, { shouldValidate: true, shouldDirty: true });
                       }}
                     >
                       <SelectTrigger className={isDuplicate ? 'border-destructive' : ''}>
@@ -64,7 +64,7 @@ export function ProjectTeamSection() {
                       </SelectTrigger>
                       <SelectContent>
                         {teamMembers.map(member => (
-                          <SelectItem key={member.id} value={member.id.toString()}>
+                          <SelectItem key={member.id} value={member.id}>
                             {member.name}
                           </SelectItem>
                         ))}
@@ -80,7 +80,7 @@ export function ProjectTeamSection() {
                     )}
                   </div>
 
-                  <div className="md:col-span-3 space-y-2">
+                  <div className="flex-1 space-y-2 w-full">
                     <Label>Role on Project</Label>
                     <Input 
                       placeholder="e.g. Lead Designer"
@@ -91,7 +91,7 @@ export function ProjectTeamSection() {
                     )}
                   </div>
 
-                  <div className="md:col-span-4 space-y-2">
+                  <div className="flex-[2] space-y-2 w-full">
                     <Label>Contribution Details</Label>
                     <Input 
                       placeholder="What did they do?"
@@ -99,15 +99,16 @@ export function ProjectTeamSection() {
                     />
                   </div>
                   
-                  <div className="md:col-span-1 space-y-2">
+                  <div className="w-20 shrink-0 space-y-2">
                     <Label>Order</Label>
                     <Input 
                       type="number"
+                      className="text-center px-1"
                       {...register(`team_contributions.${index}.order`, { valueAsNumber: true })}
                     />
                   </div>
 
-                  <div className="md:col-span-1 flex items-end justify-end pb-1">
+                  <div className="shrink-0 flex items-end pt-6">
                     <Button 
                       type="button" 
                       variant="ghost" 

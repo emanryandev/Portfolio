@@ -4,13 +4,14 @@ export interface ServiceFeature {
 }
 
 export interface ServicePackage {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   description: string;
   price_type: 'fixed' | 'starting_at' | 'custom';
-  price: number | null;
+  price: string | null;
+  category?: 'global' | 'backend' | 'devops' | 'pentesting';
   is_featured: boolean;
   order: number;
-  features?: ServiceFeature[];
+  features?: string[];
 }

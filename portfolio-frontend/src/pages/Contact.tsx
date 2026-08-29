@@ -9,14 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Check, ArrowRight, ArrowLeft, Loader2, User, Building2 } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, Loader2, User, Building2, Mail } from 'lucide-react';
 import { AmbientCodeBackground } from '@/components/shared/AmbientCodeBackground';
 
 type Step = 'who' | 'need' | 'project' | 'details' | 'review' | 'success';
 
 interface FormData {
-  recipientId: number | 'team' | null;
-  serviceId: number | null;
+  recipientId: string | 'team' | null;
+  serviceId: string | null;
   projectName: string;
   projectDescription: string;
   budget: string;
@@ -27,8 +27,8 @@ interface FormData {
 
 export default function Contact() {
   const [searchParams] = useSearchParams();
-  const initialRecipient = searchParams.get('recipient') ? Number(searchParams.get('recipient')) : null;
-  const initialService = searchParams.get('service') ? Number(searchParams.get('service')) : null;
+  const initialRecipient = searchParams.get('recipient') || null;
+  const initialService = searchParams.get('service') || null;
 
   const [step, setStep] = useState<Step>('who');
   const [formData, setFormData] = useState<FormData>({
@@ -75,19 +75,24 @@ export default function Contact() {
 
   const handleSubmit = async () => {
     try {
-      await submitMutation.mutateAsync({
+      const payload: any = {
         name: formData.name,
         email: formData.email,
-        phone: formData.phone || undefined,
         message: `Project: ${formData.projectName}\n\n${formData.projectDescription}`,
-        budget: formData.budget || undefined,
-        service_id: formData.serviceId || undefined,
-        recipients: formData.recipientId && formData.recipientId !== 'team' ? [formData.recipientId] : undefined,
-      });
+      };
+      
+      if (formData.phone) payload.phone = formData.phone;
+      if (formData.budget) payload.budget = formData.budget;
+      if (formData.serviceId) payload.service_id = formData.serviceId;
+      if (formData.recipientId && formData.recipientId !== 'team') {
+        payload.recipients = [formData.recipientId];
+      }
+
+      await submitMutation.mutateAsync(payload);
       handleNext('success');
     } catch (error) {
       console.error('Failed to submit contact request', error);
-      // Let error boundary or axios interceptor handle toast
+      alert('Failed to submit request. Please try again.');
     }
   };
 
@@ -201,6 +206,33 @@ export default function Contact() {
                     </div>
                   )}
 
+                  {/* Direct Contact Button */}
+                  {formData.recipientId && formData.recipientId !== 'team' && (
+                    <div className="pt-4 border-t border-border/20 mt-6 animate-in slide-in-from-bottom-2">
+                      {(() => {
+                        const selectedMember = team.find(m => m.id === formData.recipientId);
+                        if (selectedMember && selectedMember.phone) {
+                          const waUrl = `https://wa.me/${selectedMember.phone.replace(/[^0-9]/g, '')}`;
+                          return (
+                            <div className="flex flex-col sm:flex-row items-center justify-between bg-green-500/10 border border-green-500/20 p-4 rounded-xl gap-4">
+                              <div className="text-center sm:text-left">
+                                <h4 className="font-bold text-green-600 dark:text-green-500">Need an instant response?</h4>
+                                <p className="text-sm text-green-600/80 dark:text-green-400/80">Skip the form and chat with {selectedMember.name.split(' ')[0]} directly.</p>
+                              </div>
+                              <Button asChild className="bg-[#25D366] hover:bg-[#128C7E] text-white whitespace-nowrap">
+                                <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                  Chat on WhatsApp
+                                </a>
+                              </Button>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  )}
+
                   <div className="flex justify-end pt-4">
                     <Button onClick={() => handleNext('need')} disabled={!isStepValid()}>
                       Next Step <ArrowRight className="ml-2 w-4 h-4" />
@@ -221,23 +253,39 @@ export default function Contact() {
                     <div className="flex justify-center py-8"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
-                      {services.map(service => (
-                        <div 
-                          key={service.id}
-                          className={`cursor-pointer rounded-xl border-2 p-4 flex items-center justify-between transition-all
-                            ${formData.serviceId === service.id ? 'border-primary bg-primary/5' : 'border-border/40 hover:border-primary/40 bg-background'}`}
-                          onClick={() => setFormData({...formData, serviceId: service.id})}
-                        >
-                          <div>
-                            <h3 className="font-bold text-lg">{service.name}</h3>
-                            <p className="text-sm text-muted-foreground">{service.description}</p>
+                      {(() => {
+                        let relevantServices = services;
+                        if (formData.recipientId === 'team') {
+                          relevantServices = services.filter(s => s.category === 'global');
+                        } else if (formData.recipientId) {
+                          const selectedMember = team.find(m => m.id === formData.recipientId);
+                          if (selectedMember && selectedMember.department && selectedMember.department !== 'none') {
+                            relevantServices = services.filter(s => s.category === selectedMember.department);
+                          } else {
+                            relevantServices = services.filter(s => s.category !== 'global');
+                          }
+                        }
+                        
+                        const displayServices = relevantServices.length > 0 ? relevantServices : services;
+                        
+                        return displayServices.map(service => (
+                          <div 
+                            key={service.id}
+                            className={`cursor-pointer rounded-xl border-2 p-4 flex items-center justify-between transition-all
+                              ${formData.serviceId === service.id ? 'border-primary bg-primary/5' : 'border-border/40 hover:border-primary/40 bg-background'}`}
+                            onClick={() => setFormData({...formData, serviceId: service.id})}
+                          >
+                            <div>
+                              <h3 className="font-bold text-lg">{service.name}</h3>
+                              <p className="text-sm text-muted-foreground">{service.description}</p>
+                            </div>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ml-4
+                              ${formData.serviceId === service.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                              {formData.serviceId === service.id && <Check className="w-4 h-4" />}
+                            </div>
                           </div>
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ml-4
-                            ${formData.serviceId === service.id ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                            {formData.serviceId === service.id && <Check className="w-4 h-4" />}
-                          </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   )}
 
@@ -431,10 +479,13 @@ export default function Contact() {
           <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground relative z-10 flex-wrap">
             <span className="font-medium text-foreground w-full sm:w-auto text-center">Or reach out directly:</span>
             <a href="mailto:hello@yourdomain.com" className="hover:text-primary transition-colors flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-              Email
+              <Mail className="w-4 h-4" />
+              Email Us
             </a>
-            {/* TODO: Add WhatsApp, LinkedIn, and GitHub links here once the real URLs are configured */}
+            <a href="https://wa.me/201206117127" target="_blank" rel="noopener noreferrer" className="hover:text-[#25D366] transition-colors flex items-center gap-2 text-muted-foreground">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+              WhatsApp
+            </a>
           </div>
         </div>
       </section>

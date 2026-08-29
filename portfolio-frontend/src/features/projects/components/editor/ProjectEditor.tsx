@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams, useBlocker } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,19 +20,19 @@ export function ProjectEditor() {
   const isEditing = !!id;
   const navigate = useNavigate();
 
-  const { data: response, isLoading: isLoadingData } = useAdminProject(isEditing ? Number(id) : 0);
+  const { data: response, isLoading: isLoadingData } = useAdminProject(isEditing ? id! : '');
   const createMutation = useCreateProject();
   const updateMutation = useUpdateProject();
 
   const methods = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema) as any,
     defaultValues: {
-      title: '',
+      name: '',
       slug: '',
       client_name: '',
       summary: '',
       description: '',
-      image_url: '',
+      cover_image: '',
       live_url: '',
       github_url: '',
       technologies: [],
@@ -50,16 +50,16 @@ export function ProjectEditor() {
     if (isEditing && response?.data) {
       const data = response.data;
       reset({
-        title: data.title,
+        name: data.name,
         slug: data.slug,
         client_name: data.client_name || '',
-        summary: data.summary,
+        summary: data.summary || '',
         description: data.description,
-        image_url: data.image_url || '',
+        cover_image: data.cover_image || '',
         live_url: data.live_url || '',
         github_url: data.github_url || '',
         technologies: data.technologies || [],
-        team_contributions: data.team_contributions?.map(tc => ({
+        team_contributions: data.team_contributions?.map((tc: any) => ({
           id: tc.id,
           team_member_id: tc.team_member_id,
           role: tc.role,
@@ -85,10 +85,12 @@ export function ProjectEditor() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
+  const isRoutingAfterSubmit = useRef(false);
+
   // Router blocker
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
+      isDirty && !isRoutingAfterSubmit.current && currentLocation.pathname !== nextLocation.pathname
   );
 
   useEffect(() => {
@@ -106,14 +108,16 @@ export function ProjectEditor() {
   const onSubmit = async (data: ProjectFormValues) => {
     try {
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: Number(id), data });
+        await updateMutation.mutateAsync({ id: id!, data });
       } else {
         await createMutation.mutateAsync(data);
       }
       
-      // Reset isDirty state immediately before navigation
+      // Reset isDirty state
       reset(data);
       
+      // Flag intentional navigation so blocker doesn't intercept
+      isRoutingAfterSubmit.current = true;
       navigate('/admin/projects');
     } catch (error: any) {
       if (error.errors) {
@@ -132,6 +136,14 @@ export function ProjectEditor() {
   const isDraft = !methods.watch('published_at');
 
   if (isEditing && isLoadingData) return <PageLoader />;
+  if (isEditing && !response?.data) return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+      <AlertTriangle className="w-12 h-12 text-destructive" />
+      <h2 className="text-xl font-bold">Failed to load project</h2>
+      <p className="text-muted-foreground">This is often caused by an AdBlocker (like Brave Shields) blocking Firebase. Please disable it and refresh.</p>
+      <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+    </div>
+  );
 
   return (
     <FormProvider {...methods}>

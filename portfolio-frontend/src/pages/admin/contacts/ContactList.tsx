@@ -28,7 +28,7 @@ export default function ContactList() {
   const deleteMutation = useDeleteContactRequest();
   const updateStatusMutation = useUpdateContactStatus();
   
-  const handleDelete = async (id: number, email: string) => {
+  const handleDelete = async (id: string, email: string) => {
     if (window.confirm(`Delete contact request from ${email}?`)) {
       try {
         await deleteMutation.mutateAsync(id);
@@ -38,7 +38,7 @@ export default function ContactList() {
     }
   };
 
-  const handleStatusChange = async (id: number, status: string) => {
+  const handleStatusChange = async (id: string, status: string) => {
     try {
       await updateStatusMutation.mutateAsync({ id, status });
     } catch (error) {
@@ -48,19 +48,22 @@ export default function ContactList() {
 
   const columns: ColumnDef<AdminContactRequest, any>[] = [
     {
-      accessorKey: 'client_name',
+      accessorKey: 'name',
       header: 'Client',
       cell: ({ row }) => (
         <div>
-          <div className="font-medium">{row.original.client_name}</div>
-          <div className="text-xs text-muted-foreground">{row.original.client_email}</div>
+          <div className="font-medium">{row.original.name}</div>
+          <div className="text-xs text-muted-foreground">{row.original.email}</div>
         </div>
       )
     },
     {
       accessorKey: 'project_type',
       header: 'Project Type',
-      cell: ({ row }) => <span className="capitalize">{row.original.project_type?.replace('_', ' ') ?? '-'}</span>
+      cell: ({ row }) => {
+        const type = row.original.project_type || row.original.service_id || '-';
+        return <span className="capitalize">{type.replace('_', ' ')}</span>;
+      }
     },
     {
       accessorKey: 'created_at',
@@ -116,7 +119,7 @@ export default function ContactList() {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => handleDelete(row.original.id, row.original.client_email)}
+              onClick={() => handleDelete(row.original.id, row.original.email)}
               disabled={deleteMutation.isPending}
             >
               <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />

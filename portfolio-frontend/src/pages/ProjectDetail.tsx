@@ -6,6 +6,8 @@ import { NotFound } from '@/components/shared/NotFound';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ExternalLink, Link as LinkIcon, Layers, Users } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,13 +28,16 @@ export default function ProjectDetail() {
   }
 
   const project = response.data;
+  const title = project.name || '';
+  const desc = project.description || '';
+  const imageUrl = project.cover_image;
   
   return (
     <div className="flex flex-col min-h-screen">
       <SEO 
-        title={project.name} 
-        description={project.description.substring(0, 160)}
-        image={project.cover_image || undefined}
+        title={title} 
+        description={desc.substring(0, 160)}
+        image={imageUrl || undefined}
         url={`https://yourdomain.com/projects/${project.slug}`}
         type="article"
       />
@@ -49,11 +54,11 @@ export default function ProjectDetail() {
           <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
             <div className="space-y-4 max-w-3xl">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
-                {project.name}
+                {title}
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                {project.description}
-              </p>
+              <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{desc}</ReactMarkdown>
+              </div>
             </div>
             
             <div className="flex flex-col gap-3 shrink-0 min-w-[200px]">
@@ -77,13 +82,13 @@ export default function ProjectDetail() {
       </section>
 
       {/* Cover Image */}
-      {project.cover_image && (
+      {imageUrl && (
         <section className="py-8">
           <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
             <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-xl border border-border/20 bg-muted">
               <img 
-                src={project.cover_image} 
-                alt={project.name} 
+                src={imageUrl} 
+                alt={title} 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -103,49 +108,56 @@ export default function ProjectDetail() {
                 <h2>Technologies Used</h2>
               </div>
               <div className="flex flex-wrap gap-3">
-                {project.technologies?.map(tech => (
-                  <Badge key={tech.id} variant="secondary" className="px-4 py-2 text-sm font-medium">
-                    {tech.name}
+                {project.technologies?.map((tech: any, idx: number) => (
+                  <Badge key={tech.id || idx} variant="secondary" className="px-4 py-2 text-sm font-medium">
+                    {typeof tech === 'string' ? tech : tech.name}
                   </Badge>
                 ))}
+                {(!project.technologies || project.technologies.length === 0) && (
+                  <p className="text-muted-foreground text-sm">No technologies listed.</p>
+                )}
               </div>
             </div>
 
             {/* Team Contributions */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 text-2xl font-bold">
-                <Users className="h-6 w-6 text-primary" />
-                <h2>Team Contributions</h2>
-              </div>
-              
+            {project.team_contributions && project.team_contributions.length > 0 && (
               <div className="space-y-6">
-                {project.team_contributions?.map(contribution => (
-                  <div key={contribution.id} className="flex gap-4 p-4 rounded-lg bg-secondary/10 border border-border/40">
-                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-background">
-                      {contribution.team_member?.image_url ? (
-                        <img src={contribution.team_member.image_url} alt={contribution.team_member.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">IMG</div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-lg">{contribution.team_member?.name}</h4>
-                        <Badge variant="outline" className="text-xs">{contribution.role}</Badge>
+                <div className="flex items-center gap-3 text-2xl font-bold">
+                  <Users className="h-6 w-6 text-primary" />
+                  <h2>Team Contributions</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  {project.team_contributions.map((contribution: any, idx: number) => (
+                    <div key={contribution.id || idx} className="flex gap-4 p-4 rounded-lg bg-secondary/10 border border-border/40">
+                      <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-background border border-border/50">
+                        {contribution.team_member?.image_url ? (
+                          <img src={contribution.team_member.image_url} alt={contribution.team_member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-sm">
+                            {contribution.team_member?.name ? contribution.team_member.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : '??'}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {contribution.contribution_description}
-                      </p>
-                      {contribution.team_member?.slug && (
-                        <Link to={`/team/${contribution.team_member.slug}`} className="inline-block mt-2 text-sm text-primary hover:underline">
-                          View Profile
-                        </Link>
-                      )}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-lg">{contribution.team_member?.name || 'Unknown Member'}</h4>
+                          <Badge variant="outline" className="text-xs">{contribution.role}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {contribution.contribution_description}
+                        </p>
+                        {contribution.team_member?.slug && (
+                          <Link to={`/team/${contribution.team_member.slug}`} className="inline-block mt-2 text-sm text-primary hover:underline">
+                            View Profile
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>

@@ -12,7 +12,7 @@ export default function ProjectList() {
   const { data: response, isLoading, isError, refetch } = useAdminProjects();
   const deleteMutation = useDeleteProject();
   
-  const handleDelete = async (id: number, title: string) => {
+  const handleDelete = async (id: string, title: string) => {
     if (window.confirm(`Delete project "${title}"? This action cannot be undone.`)) {
       try {
         await deleteMutation.mutateAsync(id);
@@ -29,8 +29,8 @@ export default function ProjectList() {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-md bg-secondary overflow-hidden shrink-0">
-            {row.original.image_url ? (
-              <img src={row.original.image_url} alt={row.original.title} className="w-full h-full object-cover" />
+            {row.original.cover_image ? (
+              <img src={row.original.cover_image} alt={row.original.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground bg-primary/10">
                 No Img
@@ -38,7 +38,7 @@ export default function ProjectList() {
             )}
           </div>
           <div>
-            <div className="font-medium">{row.original.title}</div>
+            <div className="font-medium">{row.original.name}</div>
             <div className="text-xs text-muted-foreground">{row.original.slug}</div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function ProjectList() {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => handleDelete(row.original.id, row.original.title)}
+              onClick={() => handleDelete(row.original.id, row.original.name)}
               disabled={deleteMutation.isPending}
             >
               <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
